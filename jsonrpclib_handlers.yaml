@@ -1,0 +1,17 @@
+show:
+    boot:
+        func: bootinfoApi.BootInfo().get_boot
+        param:
+    vlan:
+        func: vlanApi.VlanSystem().python_get_vlan
+        param:
+        id: 
+            func: vlanApi.VlanSystem().python_get_vlan
+            param: one_param_to_int
+vlan: 
+    func: vlanApi.VlanSystem().python_create_vlan
+    param: one_param_to_vlan_dict
+"no": 
+    vlan:
+        func: vlanApi.VlanSystem().python_delete_vlan
+        param: one_param_to_int

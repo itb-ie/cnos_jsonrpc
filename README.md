@@ -1,3 +1,4 @@
+
 #jsonrpc for Lenovo CNOS
 
 ##Description
@@ -10,3 +11,9 @@ Server-client application fo configuring Lenovo CNOS switches using python jsonr
         or
         git clone git@10.240.32.214:gabi/cnos_jsonrpclib.git
 
+## Dependencies
+### Client
+jsonrpclib xmlrpclib xlsxwriter lxml openpyxl pandas
+
+### Server
+jsonrpclib xmlrpclib

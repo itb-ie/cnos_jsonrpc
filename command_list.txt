@@ -1,0 +1,6 @@
+show boot
+show vlan
+vlan 3
+show vlan id 3
+no vlan 3
+router bgp 10

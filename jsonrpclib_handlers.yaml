@@ -11,6 +11,10 @@ show:
 vlan: 
     func: vlanApi.VlanSystem().python_create_vlan
     param: one_param_to_vlan_dict
+router:
+    bgp:
+        func: configure_bgp
+        param: bgp_rid_to_list 
 "no": 
     vlan:
         func: vlanApi.VlanSystem().python_delete_vlan

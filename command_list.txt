@@ -6,4 +6,6 @@
 #['enable', 'configure terminal', 'vlan 0']
 ['enable', 'configure terminal', 'router bgp 10']
 ['enable', 'configure terminal', 'vlan 10', 'name gabi']
+['enable', 'show vlan id 10']
+#['enable', 'show boot']
 #show ip bgp neighbors 

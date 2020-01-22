@@ -53,7 +53,7 @@ class LenovoJSONRPCServer():
 
         print "state = %s" %self.state
 
-        if type(response) is list:
+        if isinstance(response, list) or isinstance(response, dict):
             return response
         return {}
 

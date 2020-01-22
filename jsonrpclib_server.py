@@ -19,13 +19,13 @@ def show_ip_bgp_neighbors():
 
 class LenovoJSONRPCServer():
     def __init__(self):
-        self.state = 0
+        self.state = []
 
-    def got_to_enable(self):
-        self.state = 1
+    def go_to_enable(self):
+        self.state.append('enable')
 
     def go_to_conf(self):
-        self.state = 2
+        self.state.append('configure terminal')
 
     def get_handler(self, cmd):
         global cmd_tree
@@ -40,7 +40,7 @@ class LenovoJSONRPCServer():
                 cmd_index += 1
             else:
                 break;
-        return eval(handler["func"]), eval(handler["param"])(split_cmd[cmd_index:]) if handler.get("param") else None
+        return eval(handler["func"]), eval(handler["param"])(split_cmd[cmd_index:]) if handler.get("param") else split_cmd[cmd_index:]
 
     def exec_cmd(self, cmd):
         (function, params) = self.get_handler(cmd)
@@ -51,9 +51,21 @@ class LenovoJSONRPCServer():
         else:
             response = function()
 
+        print "state = %s" %self.state
+
         if type(response) is list:
             return response
         return {}
+
+    def name(self, name):
+        print "____NAME___%s %s" %(type(name), name)
+
+    def vlan(self, id):
+        print "*****id=%s" %id
+        print id[0]
+        print int(id[0])
+        print vlanApi.VlanSystem().python_create_vlan(one_param_to_vlan_dict(id))
+        self.state.append({'vlan':id[0]})
 
 def run_cmd(x):
     global cmd_tree

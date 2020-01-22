@@ -5,5 +5,5 @@
 #no vlan 3
 #['enable', 'configure terminal', 'vlan 0']
 ['enable', 'configure terminal', 'router bgp 10']
-
+['enable', 'configure terminal', 'vlan 10', 'name gabi']
 #show ip bgp neighbors 

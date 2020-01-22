@@ -1,21 +1,28 @@
+enable:
+  func: self.got_to_enable
+configure:
+  terminal:
+    func: self.go_to_conf
 show:
-    boot:
-        func: bootinfoApi.BootInfo().get_boot
-        param:
-    vlan:
-        func: vlanApi.VlanSystem().python_get_vlan
-        param:
-        id: 
-            func: vlanApi.VlanSystem().python_get_vlan
-            param: one_param_to_int
-vlan: 
-    func: vlanApi.VlanSystem().python_create_vlan
-    param: one_param_to_vlan_dict
-router:
+  boot:
+    func: bootinfoApi.BootInfo().get_boot
+  vlan:
+    func: vlanApi.VlanSystem().python_get_vlan
+    id:
+      func: vlanApi.VlanSystem().python_get_vlan
+      param: one_param_to_int
+  ip:
     bgp:
-        func: configure_bgp
-        param: bgp_rid_to_list 
-"no": 
-    vlan:
-        func: vlanApi.VlanSystem().python_delete_vlan
-        param: one_param_to_int
+      neighbors:
+        func: show_ip_bgp_neighbors
+vlan:
+  func: vlanApi.VlanSystem().python_create_vlan
+  param: one_param_to_vlan_dict
+router:
+  bgp:
+    func: bgpApi.BGP().python_bgp_put_global_cfg
+    param: bgp_rid_to_list
+"no":
+  vlan:
+    func: vlanApi.VlanSystem().python_delete_vlan
+    param: one_param_to_int

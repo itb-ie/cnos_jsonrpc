@@ -1,61 +1,78 @@
 #!/usr/bin/python
 
-from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
-import yaml
-
-from jsonrpclib_params_conv import *
-
+import bgpApi
 import systemApi
+import yaml
 import bootinfoApi
 import vlanApi
-import bgpApi
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+from jsonrpclib_params_conv import *
 
+cmd_tree = yaml.safe_load(open('jsonrpclib_handlers.yaml', 'r'))
 
-cmd_tree=yaml.safe_load(open('jsonrpclib_handlers.yaml', 'r'))
+def show_ip_bgp_neighbors():
+    peers = bgpApi.BGP().python_show_ip_bgp_neighbors()
+    json_peers = []
+    for p in peers:
+        json_peers.append(dict(p))
+    return {"peerList": json_peers}
 
-def configure_bgp(dict_global):
-    bgp_inst = bgpApi.BGP()
-    return bgp_inst.python_bgp_put_global_cfg(dict_global)
+class LenovoJSONRPCServer():
+    def __init__(self):
+        self.state = 0
 
+    def got_to_enable(self):
+        self.state = 1
 
-def get_handler(cmd):
-    global cmd_tree
-    split_cmd=cmd.split(' ')
-    cmd_index=0
-    handler=cmd_tree
-    for word in split_cmd:
-        if word in handler:
-            handler = handler[word]
-            cmd_index += 1
+    def go_to_conf(self):
+        self.state = 2
+
+    def get_handler(self, cmd):
+        global cmd_tree
+        split_cmd = cmd.lstrip().split(' ')
+        print split_cmd
+        cmd_index = 0
+        handler = cmd_tree
+        for word in split_cmd:
+            print word
+            if word in handler:
+                handler = handler[word]
+                cmd_index += 1
+            else:
+                break;
+        return eval(handler["func"]), eval(handler["param"])(split_cmd[cmd_index:]) if handler.get("param") else None
+
+    def exec_cmd(self, cmd):
+        (function, params) = self.get_handler(cmd)
+        print "Calling function %s(%s)" % (function, params)
+
+        if params:
+            response = function(params)
         else:
-            break;
-    print 'cmd_index: %s' %cmd_index
-    print 'split_cmd: %s' %split_cmd
-    print 'handler: %s' %handler
-    print 'func: %s' %handler["func"]
-    print 'param: %s' %handler["param"]
-    return (eval(handler["func"]), eval(handler["param"])(split_cmd[cmd_index:]) if handler["param"] else None)
+            response = function()
 
-def runCmd(x):
+        if type(response) is list:
+            return response
+        return {}
+
+def run_cmd(x):
     global cmd_tree
     print cmd_tree
-    print "New command: %s" %x
-    
-    (function, params) = get_handler(x)
-    print "Calling function %s(%s)" %(function, params)
+    print "New command: %s" % x
+    tranz = LenovoJSONRPCServer()
 
     systemApi.client_connect()
-    if params:
-        response=function(params)
-    else:
-        response=function()
+    resp = []
+
+    for cmd in x:
+        resp.append(tranz.exec_cmd(cmd))
+
     systemApi.client_disconnect()
 
-    return response
-  
+    return resp
+
 
 server = SimpleJSONRPCServer(('0.0.0.0', 8080))
 server.register_function(pow)
-server.register_function(runCmd, 'runCmd')
+server.register_function(run_cmd, 'runCmds')
 server.serve_forever()
-

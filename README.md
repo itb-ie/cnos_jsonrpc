@@ -1,7 +1,7 @@
 
-#jsonrpc for Lenovo CNOS
+# jsonrpc for Lenovo CNOS
 
-##Description
+## Description
 Server-client application fo configuring Lenovo CNOS switches using python jsonrpclib
 
 
@@ -17,3 +17,4 @@ jsonrpclib xmlrpclib xlsxwriter lxml openpyxl pandas
 
 ### Server
 jsonrpclib xmlrpclib
+

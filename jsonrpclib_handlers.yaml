@@ -1,34 +1,33 @@
 enable:
-  func: self.go_to_enable
-configure:
-  terminal:
-    func: self.go_to_conf
-show:
-  boot:
-    func: bootinfoApi.BootInfo().get_boot
-    param:
-  vlan:
-    func: vlanApi.VlanSystem().python_get_vlan
-    param:
-    id:
+  tranz: go_to_enable
+  configure:
+    terminal:
+      tranz: go_to_conf
+      vlan:
+        tranz: go_to_vlan
+        func: vlanApi.VlanSystem().python_create_vlan
+        param: one_param_to_vlan_dict
+        name:
+          func: vlanApi.VlanSystem().python_update_vlan_name
+          param: self.vlan_name
+      router:
+        bgp:
+          tranz: go_to_bgp
+          func: bgpApi.BGP().python_bgp_put_global_cfg
+          param: bgp_rid_to_list
+      "no":
+        vlan:
+          func: vlanApi.VlanSystem().python_delete_vlan
+          param: one_param_to_int
+  show:
+    boot:
+      func: bootinfoApi.BootInfo().get_boot
+    vlan:
       func: vlanApi.VlanSystem().python_get_vlan
-      param: one_param_to_int
-  ip:
-    bgp:
-      neighbors:
-        func: show_ip_bgp_neighbors
-        param:
-vlan:
-  func: self.vlan
-router:
-  bgp:
-    func: bgpApi.BGP().python_bgp_put_global_cfg
-    param: bgp_rid_to_list
-"no":
-  vlan:
-    func: vlanApi.VlanSystem().python_delete_vlan
-    param: one_param_to_int
-name:
-  func: self.name
-exit:
-  func: self.pop
+      id:
+        func: vlanApi.VlanSystem().python_get_vlan
+        param: one_param_to_int
+    ip:
+      bgp:
+        neighbors:
+          func: show_ip_bgp_neighbors

@@ -19,6 +19,8 @@ def show_ip_bgp_neighbors():
 
 class LenovoJSONRPCServer():
     def __init__(self):
+        global cmd_tree
+        print
         self.state = []
         systemApi.client_connect()
 
@@ -33,36 +35,72 @@ class LenovoJSONRPCServer():
         self.state.append('enable')
 
     def go_to_conf(self):
-        self.state.append('configure terminal')
+        self.state.append('configure')
+        self.state.append('terminal')
+
+    def go_to_vlan(self, vlan):
+        self.state.append({'vlan':vlan})
+
+    def go_to_bgp(self, bgp):
+        self.state.append({'router bgp': bgp})
 
     def get_handler(self, cmd):
+        if cmd == 'exit':
+            self.pop()
+            return None, None, None
         global cmd_tree
         split_cmd = cmd.lstrip().split(' ')
         cmd_index = 0
         handler = cmd_tree
+        for state in self.state:
+            if isinstance(state, str):
+                handler = handler[state]
+            if isinstance(state, dict):
+                handler = handler[list(state)[0]]
         for word in split_cmd:
             if word in handler:
                 handler = handler[word]
                 cmd_index += 1
             else:
                 break;
-        return eval(handler["func"]), eval(handler["param"])(split_cmd[cmd_index:]) if handler.get("param") else split_cmd[cmd_index:]
+        print handler
+        func = eval(handler["func"]) if handler.get("func") else None
+        params = eval(handler["param"])(split_cmd[cmd_index:]) if handler.get("param") else split_cmd[cmd_index:]
+        tranz = eval('self.'+ handler['tranz']) if handler.get("tranz") else None
+        return func, params, tranz
 
     def exec_cmd(self, cmd):
-        (function, params) = self.get_handler(cmd)
-        print "Calling function %s(%s)" % (function, params)
+        print "\n\nExecuting: %s" % cmd
+        (function, params, tranz) = self.get_handler(cmd)
         print "State: %s" %self.state
-        print "Executing: %s" %cmd
 
-        if params:
-            response = function(params)
-        else:
-            response = function()
+        response = {}
 
-        if isinstance(response, list) or isinstance(response, dict):
-            return response
-        return {}
+        if function:
+            print "Calling function %s(%s)" % (function, params)
+            if params:
+                if isinstance(params, tuple):
+                    resp = function(*params)
+                else:
+                    resp = function(params)
+            else:
+                resp = function()
+            if isinstance(resp, list) or isinstance(resp, dict):
+                response = resp
 
+        if tranz:
+            print "Tranz: %s" %tranz
+            if params:
+                tranz(params)
+            else:
+                tranz()
+
+        return response
+
+    def vlan_name(self, x):
+        vlan_id = self.state[-1]['vlan']['vlan_id']
+        name = str(x[0])
+        return vlan_id, name
     def name(self, name):
         if len(self.state) == 0:
             raise Exception("Command not allowed")
@@ -78,7 +116,6 @@ class LenovoJSONRPCServer():
         self.state.append({'vlan':int(id[0])})
 
 def run_cmd(x):
-    global cmd_tree
     print "\n\n___________________"
     print "New command: %s" % x
 

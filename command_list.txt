@@ -1,11 +1,7 @@
-#show boot
-#show vlan
-#vlan 3
-#show vlan id 3
-#no vlan 3
 #['enable', 'configure terminal', 'vlan 0']
 ['enable', 'configure terminal', 'router bgp 10']
-['enable', 'configure terminal', 'vlan 10', 'name gabi']
+['enable', 'configure terminal', 'vlan 10', 'name test_vlan_10']
 ['enable', 'show vlan id 10']
+['enable', 'configure terminal', 'no vlan 10', 'exit']
 #['enable', 'show boot']
 #show ip bgp neighbors 

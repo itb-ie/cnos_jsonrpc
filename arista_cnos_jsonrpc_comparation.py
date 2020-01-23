@@ -1,11 +1,8 @@
 #!/usr/bin/python2.7
 import json
-
 import pandas
+from devices import *
 from jsonrpclib import Server
-
-cnos_url = 'http://10.241.7.145:8080'
-arista_url = 'http://admin:admin@192.168.10.3/command-api'
 
 def add_header(f):
     header = open("header.txt", "r")
@@ -14,23 +11,7 @@ def add_header(f):
 
 
 def beautify (elem, indent, f):
-    if isinstance(elem, list):
-        f.write("&nbsp"*3*indent + "[<br>\n")
-        for i in elem:
-            beautify(i, indent+1,f)
-        f.write("&nbsp"*3*indent + "]<br>\n")
-    elif isinstance(elem, dict):
-        f.write("&nbsp"*3*indent + "{<br>\n")
-        for k,val in elem.items():
-            if not isinstance(val, list) and not isinstance(val, dict):
-                f.write("&nbsp"*3*indent + "\""+ k + "\"" + " : " + str(val) + "<br>\n")
-            else:
-                f.write("&nbsp"*3*indent + "\""+ k + "\"" + " :<br>\n" )
-                beautify(val, indent+1, f)
-
-        f.write("&nbsp"*3*indent + "}<br>\n")
-    else:
-        f.write("&nbsp"*3*indent + str(elem) + "<br>\n")
+    f.write(json.dumps(elem, indent=4, sort_keys=True).replace('\n', '<br>').replace(' ', "&nbsp"))
 
 def cmd_run(cnos, arista, output, cmd):
     print "Running \"%s\" command on cnos." % cmd

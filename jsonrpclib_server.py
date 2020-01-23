@@ -20,6 +20,14 @@ def show_ip_bgp_neighbors():
 class LenovoJSONRPCServer():
     def __init__(self):
         self.state = []
+        systemApi.client_connect()
+
+    def __del__(self):
+        systemApi.client_disconnect()
+
+    def pop(self):
+        if len(self.state) > 0:
+            self.state.pop()
 
     def go_to_enable(self):
         self.state.append('enable')
@@ -30,11 +38,9 @@ class LenovoJSONRPCServer():
     def get_handler(self, cmd):
         global cmd_tree
         split_cmd = cmd.lstrip().split(' ')
-        print split_cmd
         cmd_index = 0
         handler = cmd_tree
         for word in split_cmd:
-            print word
             if word in handler:
                 handler = handler[word]
                 cmd_index += 1
@@ -45,41 +51,41 @@ class LenovoJSONRPCServer():
     def exec_cmd(self, cmd):
         (function, params) = self.get_handler(cmd)
         print "Calling function %s(%s)" % (function, params)
+        print "State: %s" %self.state
+        print "Executing: %s" %cmd
 
         if params:
             response = function(params)
         else:
             response = function()
 
-        print "state = %s" %self.state
-
         if isinstance(response, list) or isinstance(response, dict):
             return response
         return {}
 
     def name(self, name):
-        print "____NAME___%s %s" %(type(name), name)
+        if len(self.state) == 0:
+            raise Exception("Command not allowed")
+        last_state = self.state[-1]
+        if isinstance(last_state, dict):
+            if 'vlan' in last_state:
+                vlanApi.VlanSystem().python_update_vlan_name(last_state['vlan'], str(name[0]))
+                return
+        raise Exception("Command not allowed")
 
     def vlan(self, id):
-        print "*****id=%s" %id
-        print id[0]
-        print int(id[0])
-        print vlanApi.VlanSystem().python_create_vlan(one_param_to_vlan_dict(id))
-        self.state.append({'vlan':id[0]})
+        vlanApi.VlanSystem().python_create_vlan(one_param_to_vlan_dict(id))
+        self.state.append({'vlan':int(id[0])})
 
 def run_cmd(x):
     global cmd_tree
-    print cmd_tree
+    print "\n\n___________________"
     print "New command: %s" % x
+
     tranz = LenovoJSONRPCServer()
-
-    systemApi.client_connect()
     resp = []
-
     for cmd in x:
         resp.append(tranz.exec_cmd(cmd))
-
-    systemApi.client_disconnect()
 
     return resp
 

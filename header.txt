@@ -1,8 +1,8 @@
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th></th>
-      <th>arista</th>
-      <th>cnos</th>
+      <th>Command line</th>
+      <th>Arista output</th>
+      <th>CNOS output</th>
     </tr>
   </thead>

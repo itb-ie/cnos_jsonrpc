@@ -39,10 +39,17 @@ class LenovoJSONRPCServer():
         self.state.append('terminal')
 
     def go_to_vlan(self, vlan):
-        self.state.append({'vlan':vlan})
+        self.state.append({'vlan':vlan['dict_vlan_info']})
 
     def go_to_bgp(self, bgp):
-        self.state.append({'router bgp': bgp})
+        self.state.append('router')
+        self.state.append({'bgp': bgp['dict_global']})
+
+    def go_to_addr_fam_v4_unicast(self, bgp):
+        self.state.append({'address-family':{'ipv4':'unicast'}})
+
+    def go_to_bgp_neighbor(self, neigh):
+        self.state.append({'neighbor':neigh})
 
     def get_handler(self, cmd):
         if cmd == 'exit':
@@ -56,6 +63,8 @@ class LenovoJSONRPCServer():
             if isinstance(state, str):
                 handler = handler[state]
             if isinstance(state, dict):
+                print '________________________________%s' %list(state)[0]
+                print 'habler=%s' %handler
                 handler = handler[list(state)[0]]
         for word in split_cmd:
             if word in handler:
@@ -80,8 +89,13 @@ class LenovoJSONRPCServer():
             print "Calling function %s(%s)" % (function, params)
             if params:
                 if isinstance(params, tuple):
+                    print "Tuple"
                     resp = function(*params)
+                elif isinstance(params, dict):
+                    print "Dict_type ** %s" %params
+                    resp = function(**params)
                 else:
+                    print "__________cucu_______"
                     resp = function(params)
             else:
                 resp = function()
@@ -95,25 +109,22 @@ class LenovoJSONRPCServer():
             else:
                 tranz()
 
+        print "State_after: %s" % self.state
+
         return response
 
     def vlan_name(self, x):
         vlan_id = self.state[-1]['vlan']['vlan_id']
         name = str(x[0])
         return vlan_id, name
-    def name(self, name):
-        if len(self.state) == 0:
-            raise Exception("Command not allowed")
-        last_state = self.state[-1]
-        if isinstance(last_state, dict):
-            if 'vlan' in last_state:
-                vlanApi.VlanSystem().python_update_vlan_name(last_state['vlan'], str(name[0]))
-                return
-        raise Exception("Command not allowed")
 
-    def vlan(self, id):
-        vlanApi.VlanSystem().python_create_vlan(one_param_to_vlan_dict(id))
-        self.state.append({'vlan':int(id[0])})
+    def bgp_addr_fam_v4_unicast(self, x):
+        return {'af_name':'ipv4', 'saf_name':'unicast', 'vrf_name':'default'}
+
+    def bgp_neigh(self, x):
+        if len(x) == 3:
+            return (str(x[0]), {'remote as':int(x[2])})
+        return (str(x[0]), {})
 
 def run_cmd(x):
     print "\n\n___________________"

@@ -15,6 +15,16 @@ enable:
           tranz: go_to_bgp
           func: bgpApi.BGP().python_bgp_put_global_cfg
           param: bgp_rid_to_list
+          address-family:
+            ipv4:
+              unicast:
+                tranz: go_to_addr_fam_v4_unicast
+                func: bgpApi.BGP().python_bgp_put_af_global_config
+                param: self.bgp_addr_fam_v4_unicast
+          neighbor:
+            tranz: go_to_bgp_neighbor
+            func: bgpApi.BGP().python_put_ip_bgp_neighbors_cfg
+            param: self.bgp_neigh
       "no":
         vlan:
           func: vlanApi.VlanSystem().python_delete_vlan

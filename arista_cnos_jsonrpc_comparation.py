@@ -30,13 +30,14 @@ def beautify (output, f):
     f.write("</table>\n")
 
 
-def cmd_run(cnos, arista, output, cmd):
-    print "Running \"%s\" command on cnos." % cmd
-    cnos_output = cnos.runCmds(cmd)
-    print "Running \"%s\" command on arista." % cmd
-    arista_output = arista.runCmds(1, cmd)
-    output['arista'].append({str(cmd) : arista_output})
-    output['cnos'].append({str(cmd) : cnos_output})
+def cmd_run(cnos, arista, output, arista_cmd, cnos_cmd):
+
+    print "Running \"%s\" command on cnos." % cnos_cmd
+    cnos_output = cnos.runCmds(cnos_cmd)
+    print "Running \"%s\" command on arista." % arista_cmd
+    arista_output = arista.runCmds(1, arista_cmd)
+    output['arista'].append({str(arista_cmd) : arista_output})
+    output['cnos'].append({str(arista_cmd) : cnos_output})
 
 
 cnos = Server(cnos_url)
@@ -50,12 +51,17 @@ with open('command_list.txt', 'r') as cmd_file:
         cmd = line.rstrip()
         if len(cmd) < 1 or cmd.startswith('#'):
             continue
-        if cmd.startswith('['):
+        if cmd.startswith('[') or cmd.startswith('{'):
             cmd = eval(cmd)
         else:
             cmd = [cmd]
-        print '%s %s' %(type(cmd), cmd)
-        cmd_run(cnos, arista, output, cmd)
+        print 20*"*"
+        print type(cmd)
+        print cmd
+        if 'arista' in cmd and 'cnos' in cmd:
+            cmd_run(cnos, arista, output, cmd['arista'], cmd['cnos'])
+            continue
+        cmd_run(cnos, arista, output, cmd, cmd)
 
 print json.dumps(output, indent=4, sort_keys=True)
 f = open("json_rpc.json", 'w')
